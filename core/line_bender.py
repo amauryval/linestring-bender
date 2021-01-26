@@ -71,7 +71,6 @@ class LineStringBender:
     def __compute_curve(self):
         self._x_vals, self._y_vals = self.__bezier_curve(self._lines_nodes , sample_number=self.__sample_number_value)
 
-
     @staticmethod
     def __bernstein_poly(i, n, t):
         """

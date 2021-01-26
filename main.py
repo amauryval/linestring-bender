@@ -22,8 +22,6 @@ from core.line_bender import LineStringBender
 
 class MyMapBokeh(Gdf2Bokeh):
 
-
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
