@@ -5,7 +5,15 @@ Because it's fun to bend a LineString :)
 
 Based on this stackoverflow topic: https://stackoverflow.com/questions/12643079/b%C3%A9zier-curve-fitting-with-scipy
 
-A snippet 
+
+![](https://media.giphy.com/media/2modwsnpzX93G/giphy.gif)
+
+## Install the environment
+```
+conda env create -f environment.yml
+```
+
+## Here a short snippet 
 
 ```python
 from shapely.wkt import loads
@@ -19,9 +27,9 @@ curve = curve_process.curve_geom()
 print(curve.wkt)
 ```
 
-```
-conda env create -f environment.yml
+## And a bokeh app to bend some LineStrings
 
+```
 cd linestring-bender
 bokeh serve main.py --show
 ```
