@@ -1,10 +1,7 @@
 import geopandas as gpd
 import pandas as pd
 
-from shapely.geometry import Point
 from shapely.wkt import loads
-
-import numpy as np
 
 from bokeh.models import Slider
 from bokeh.models import Select
