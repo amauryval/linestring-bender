@@ -113,7 +113,7 @@ class MyMapBokeh(Gdf2Bokeh):
 
 bounds = (529957.0264, 5732815.3399, 553537.8496, 5746956.1901)
 MyMapBokeh(
-    title="My curved linestring",
+    title="The LineString Bender",
     width=640,
     height=800,
     x_range=(bounds[0] , bounds[2]),
