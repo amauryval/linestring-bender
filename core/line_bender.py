@@ -14,9 +14,9 @@ class LineStringBender:
         """
         :param geometry: LineString shapely geometry
         :type geometry: shapely.geometry.LineString
-        :param relative_distance_along_line: relative distance to put the node controler on the line
+        :param relative_distance_along_line: relative distance to put the node controler on the line ]0-1]
         :type relative_distance_along_line: float, int
-        :param offset_distance_from_line: the offset distance from the line, like a buffer value
+        :param offset_distance_from_line: the offset distance from the line, like a buffer value (meters)
         :type offset_distance_from_line: float, int
         :param offset_distance_from_line: offset position, on the right/left of the line
         :type offset_distance_from_line: str, one of 'right', 'left'
