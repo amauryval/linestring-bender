@@ -1,0 +1,10 @@
+name: linestring_bender
+channels:
+  - conda-forge
+  - anaconda
+  - amauryval
+  - defaults
+dependencies:
+  - python=3.8
+  - gdf2bokeh=2.0.1
+  - scipy
