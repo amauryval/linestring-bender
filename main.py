@@ -38,16 +38,19 @@ class MyMapBokeh(Gdf2Bokeh):
         self._inputext_widget_geom()
 
         input_data = self.__build_curve_gdf()
-        self.bokeh_layer_points_container = self.add_lines(input_data, line_color="red", line_width=10, legend="my curved line")
+        # original line
+        self.add_lines(input_data, line_color="blue", line_width=10, legend="my original line")
+        # curved line
+        self.bokeh_layer_curved_line_container = self.add_lines(input_data, line_color="red", line_width=10, legend="my curved line")
 
         self._map_layout()
 
     def _prepare_data(self):
         input_data = self.__build_curve_gdf()
-        self.bokeh_layer_points_container.data = dict(self._format_gdf_features_to_bokeh(input_data).data)
+        self.bokeh_layer_curved_line_container.data = dict(self._format_gdf_features_to_bokeh(input_data).data)
 
     def _slider_widget_distance_along_line(self):
-        self.slider_widget_distance_along_line = Slider(start=0.1, end=1, value=0.5, step=0.01, title="Relative distance along line")
+        self.slider_widget_distance_along_line = Slider(start=0.1, end=1, value=0.5, step=0.1, title="Relative distance along line")
         self.slider_widget_distance_along_line.on_change('value', self.__slider_widget_distance_along_line_update)
 
     def __slider_widget_distance_along_line_update(self, attrname, old_value, relative_distance_along_line_value):
