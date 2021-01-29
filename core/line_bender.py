@@ -14,7 +14,7 @@ class LineStringBender:
         """
         :param geometry: LineString shapely geometry
         :type geometry: shapely.geometry.LineString
-        :param relative_distance_along_line: relative distance to put the node controler on the line ]0-1]
+        :param relative_distance_along_line: relative distance to put the node controller on the line ]0-1]
         :type relative_distance_along_line: float, int
         :param offset_distance_from_line: the offset distance from the line, like a buffer value (meters)
         :type offset_distance_from_line: float, int
@@ -26,7 +26,7 @@ class LineStringBender:
         assert len(geometry.coords[:]) == 2, f"Only a linestring containing 2 coordinates: {len(geometry.coords[:])} found"
         assert 0 < relative_distance_along_line <= 1, "Define the relative distance ]0 to 1]"
         assert isinstance(offset_distance_from_line, (float, int)), "Offset value should be a number"
-        assert offset_position in {"right", "left"}, "Offset position: 'rigth' or 'left'"
+        assert offset_position in {"right", "left"}, "Offset position: 'right' or 'left'"
 
         self._geom = geometry
         self._relative_distance_along_line = relative_distance_along_line
@@ -34,10 +34,13 @@ class LineStringBender:
         self._offset_position = offset_position
 
         self._prepare_input()
-        self.__compute_curve()
+        self.__compute_smooth_curve()
 
-    def curve_geom(self):
-        return LineString(list(zip(self._x_vals , self._y_vals))[::-1])
+    def smooth_curve_geom(self):
+        return LineString(list(zip(self._x_vals, self._y_vals))[::-1])
+
+    def raw_curve_geom(self):
+        return LineString(self._geom_coordinates)
 
     def node_controler_geom(self):
         return self._point_control_on_line
@@ -49,7 +52,7 @@ class LineStringBender:
             normalized=True
         )
         point_control_line = LineString([
-            self._geom.coords[0] ,
+            self._geom.coords[0],
             *self._point_control_on_line.coords[:]
         ])
         offset_line = point_control_line.parallel_offset(
@@ -65,11 +68,12 @@ class LineStringBender:
 
         # insert the coord in the center of the line and create a numpy array
         geom_coordinates = self._geom.coords[:]
-        geom_coordinates.insert(1 , node_control)
+        geom_coordinates.insert(1, node_control)
+        self._geom_coordinates = geom_coordinates
         self._lines_nodes = np.array(geom_coordinates)
 
-    def __compute_curve(self):
-        self._x_vals, self._y_vals = self.__bezier_curve(self._lines_nodes , sample_number=self.__sample_number_value)
+    def __compute_smooth_curve(self):
+        self._x_vals, self._y_vals = self.__bezier_curve(self._lines_nodes, sample_number=self.__sample_number_value)
 
     @staticmethod
     def __bernstein_poly(i, n, t):
@@ -115,5 +119,5 @@ if __name__ == "__main__":
 
     input_line = loads("LINESTRING(0 0, 25 25)")
     curve_process = LineStringBender(input_line, 0.5, 2, 'right')
-    curve = curve_process.curve_geom()
+    curve = curve_process.smooth_curve_geom()
     print(curve.wkt)

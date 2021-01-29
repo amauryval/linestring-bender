@@ -6,6 +6,7 @@ from shapely.wkt import loads
 from bokeh.models import Slider
 from bokeh.models import Select
 from bokeh.models import TextInput
+from bokeh.models import CheckboxGroup
 
 from gdf2bokeh import Gdf2Bokeh
 
@@ -26,6 +27,20 @@ class MyMapBokeh(Gdf2Bokeh):
         self._relative_distance_along_line_value = 0.5
         self._offset_distance_from_line_value = 50
         self._offset_position_value = 'left'
+        self._smooth_status = True
+
+        self._original_line_layer = {
+            "input_wkt": self._input_geometry.wkt,
+            "line_color": "blue",
+            "line_width": 10,
+            "legend": "my original line"
+        }
+        self._curve_line_layer = {
+            "input_wkt": None,
+            "line_color": "red",
+            "line_width": 10,
+            "legend": "my curved line"
+        }
 
     def plot(self):
 
@@ -33,18 +48,21 @@ class MyMapBokeh(Gdf2Bokeh):
         self._slider_widget_offset_distance_from_line()
         self._combobox_widget_offset_position()
         self._inputext_widget_geom()
+        self._checkbox_widget_smooth_mode()
 
-        input_data = self.__build_curve_gdf()
         # original line
-        self.add_lines(input_data, line_color="blue", line_width=10, legend="my original line")
+        self.add_layer(self._original_line_layer)
         # curved line
-        self.bokeh_layer_curved_line_container = self.add_lines(input_data, line_color="red", line_width=10, legend="my curved line")
+        geom_curved = self.__build_curve_gdf()
+        curve_line_layer = {**self._curve_line_layer, "input_wkt": geom_curved}
+        self.add_layer(curve_line_layer)
 
         self._map_layout()
 
     def _prepare_data(self):
-        input_data = self.__build_curve_gdf()
-        self.bokeh_layer_curved_line_container.data = dict(self._format_gdf_features_to_bokeh(input_data).data)
+        geom_curve_rebuilt = self.__build_curve_gdf()
+        layer_updated = {**self._curve_line_layer, "input_wkt": geom_curve_rebuilt}
+        self.get_bokeh_layer_containers[layer_updated["legend"]].data = self.refresh_existing_layer(layer_updated)
 
     def _slider_widget_distance_along_line(self):
         self.slider_widget_distance_along_line = Slider(start=0.1, end=1, value=0.5, step=0.1, title="Relative distance along line")
@@ -64,9 +82,9 @@ class MyMapBokeh(Gdf2Bokeh):
 
     def _combobox_widget_offset_position(self):
         self.combobox_widget_offset_position = Select(title="Offset position:", value="left", options=["left", "right"])
-        self.combobox_widget_offset_position.on_change('value', self.__slider_widget_offset_position_update)
+        self.combobox_widget_offset_position.on_change('value', self.__combobox_widget_offset_position_update)
 
-    def __slider_widget_offset_position_update(self, attrname, old_value, offset_position_value):
+    def __combobox_widget_offset_position_update(self, attrname, old_value, offset_position_value):
         self._offset_position_value = offset_position_value
         self._prepare_data()
 
@@ -78,6 +96,17 @@ class MyMapBokeh(Gdf2Bokeh):
         self._input_geometry = loads(geom_value)
         self._prepare_data()
 
+    def _checkbox_widget_smooth_mode(self):
+        self.checkbox_curve_smooth = CheckboxGroup(labels=["Smooth"], active=[0])
+        self.checkbox_curve_smooth.on_click(self.__checkbox_widget_smooth_update)
+
+    def __checkbox_widget_smooth_update(self, smooth_status):
+        self._smooth_status = False
+        if len(smooth_status) == 1:
+            self._smooth_status = True
+        self._prepare_data()
+
+
     def __build_curve_gdf(self):
         curve_process = LineStringBender(
             self._input_geometry,
@@ -85,27 +114,24 @@ class MyMapBokeh(Gdf2Bokeh):
             self._offset_distance_from_line_value,
             self._offset_position_value
         )
-        curve_geom = curve_process.curve_geom()
-        df = pd.DataFrame([{"geometry": curve_geom, "id": "1"}])
-        geometry = df["geometry"]
-        properties = df["id"]
+        if self._smooth_status:
+            curve_geom = curve_process.smooth_curve_geom().wkt
+        else:
+            curve_geom = curve_process.raw_curve_geom().wkt
 
-        return gpd.GeoDataFrame(
-            properties ,
-            geometry=geometry,
-            crs='EPSG:3857'
-        )
+        return curve_geom
 
     def _map_layout(self):
         layout = column(
             row(self.figure),
             row(self.inputext_widget_geom),
+            row(self.checkbox_curve_smooth),
             row(self.slider_widget_distance_along_line),
             row(self.slider_widget_offset_distance_from_line),
             row(self.combobox_widget_offset_position)
         )
         curdoc().add_root(layout)
-        curdoc().title = "My SandBox"
+        curdoc().title = "LineString Bender"
 
 
 bounds = (529957.0264, 5732815.3399, 553537.8496, 5746956.1901)
