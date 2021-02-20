@@ -34,6 +34,6 @@ cd linestring-bender
 bokeh serve main.py --show
 ```
 
-![example](img/example.png)
+![example](img/example.gif)
 
 
